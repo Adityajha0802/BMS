@@ -1,0 +1,15 @@
+name: Deploy to production
+on:
+  push:
+    branches: [ production ]
+
+jobs:
+  redeploy_everything:
+    runs-on: ubuntu-latest 
+    name: Deploying everything to production cluster
+
+    steps:
+    - run: |
+       echo "${{secrets.SSH_PRIVATE_KEY}}" &> ~/ssh_key 
+       chmod 700 /home/runner/ssh_key
+       ssh -i ~/ssh_key -o StrictHostKeyChecking=no ubuntu@18.185.7.250 -t "cd BMS/ && git pull origin production && export PATH=/home/ubuntu/.nvm/versions/node/v24.0.1/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin && npm install -g pnpm && pnpm install && pnpm run build && pm2 restart http-server && pm2 restart fe-server && pm2 restart ws-server"
