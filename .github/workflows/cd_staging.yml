@@ -1,0 +1,24 @@
+name: Deploy to staging
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  redeploy_everything:
+    runs-on: ubuntu-latest 
+    name: Deploying everything to staging cluster
+
+    steps:
+    - run: |
+       echo "${{secrets.SSH_PRIVATE_KEY}}" &> ~/ssh_key 
+       mkdir -p /home/runner/.ssh
+       ls /home/runner/.ssh
+       touch /home/runner/.ssh/known_hosts
+       echo "${{secrets.KNOWN_HOST}}" &> /home/runner/.ssh/known_hosts
+       chmod 700 /home/runner/ssh_key
+       ssh -i ~/ssh_key ubuntu@18.196.157.8 -t "cd BMS/ && git pull origin main && export PATH=/home/ubuntu/.nvm/versions/node/v24.0.1/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin && npm install -g pnpm && pnpm install && pnpm run build && pm2 restart http-server && pm2 restart fe-server && pm2 restart ws-server"
+       
+  
+
+
+
